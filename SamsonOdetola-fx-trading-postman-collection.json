@@ -1,0 +1,359 @@
+{
+  "info": {
+    "_postman_id": "2a6ff198-b77a-4679-b71e-41fe8b43ee0a",
+    "name": "FX Trading App — Samson Odetola (CredPal Assessment)",
+    "description": "Complete API collection for the FX Trading App backend.\n\n## Setup\n1. Set the `baseURL` variable to `http://localhost:3333`\n2. Register a user, verify OTP, then login to get your token\n3. Set the `token` variable with the JWT from the login/verify response\n4. All wallet, FX and transaction endpoints require Bearer authentication\n\n## Endpoints\n- **Auth**: Register, verify OTP, login, resend OTP\n- **Wallet**: Fund wallet (NGN, USD, EUR, GBP), get balances\n- **FX**: Get rates, convert currencies, trade currencies\n- **Transactions**: View transaction history with pagination",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost:3333",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "paste-your-jwt-token-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "User registration, OTP verification and login",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"samson_fx\",\n  \"email\": \"your_email@gmail.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/auth/register", "host": ["{{baseURL}}"], "path": ["auth", "register"] },
+            "description": "Register a new user. An OTP will be sent to the provided email address. Only verified users can access trading features."
+          },
+          "response": [
+            {
+              "name": "201 - Registration Successful",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"message\": \"Registration successful. OTP sent to email.\",\n    \"userId\": \"a956f99f-7390-4bf1-9564-170e3c48ba2c\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"your_email@gmail.com\",\n  \"otp\": \"123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/auth/verify", "host": ["{{baseURL}}"], "path": ["auth", "verify"] },
+            "description": "Verify the OTP sent to email. Returns a JWT access token on success. OTP expires after 10 minutes. Max 5 failed attempts before lockout."
+          },
+          "response": [
+            {
+              "name": "200 - Email Verified",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"message\": \"Email verified successfully\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"your_email@gmail.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/auth/login", "host": ["{{baseURL}}"], "path": ["auth", "login"] },
+            "description": "Login with email and password. Returns JWT access token. Copy the accessToken value into the `token` collection variable."
+          },
+          "response": [
+            {
+              "name": "200 - Login Successful",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"message\": \"Login successful\",\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n        \"id\": \"a956f99f-7390-4bf1-9564-170e3c48ba2c\",\n        \"username\": \"samson_fx\",\n        \"email\": \"your_email@gmail.com\",\n        \"role\": \"USER\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"your_email@gmail.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/auth/resend-otp", "host": ["{{baseURL}}"], "path": ["auth", "resend-otp"] },
+            "description": "Resend OTP to the registered email. Resets the attempt counter and generates a fresh 10-minute OTP."
+          },
+          "response": [
+            {
+              "name": "200 - OTP Resent",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"message\": \"New OTP sent to email\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wallet",
+      "description": "Multi-currency wallet management. All endpoints require Bearer authentication.",
+      "item": [
+        {
+          "name": "Get Wallet Balances",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseURL}}/wallets", "host": ["{{baseURL}}"], "path": ["wallets"] },
+            "description": "Get all wallet balances for the authenticated user. Returns all currencies the user holds."
+          },
+          "response": [
+            {
+              "name": "200 - Wallet Balances",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "[\n    {\n        \"id\": \"fc2b3392-8385-4144-b8b6-3a38440f858d\",\n        \"userId\": \"a956f99f-7390-4bf1-9564-170e3c48ba2c\",\n        \"currency\": \"NGN\",\n        \"balance\": 5000,\n        \"createdAt\": \"2026-03-17T16:56:07.241Z\",\n        \"updatedAt\": \"2026-03-17T16:56:07.000Z\"\n    },\n    {\n        \"id\": \"550b5295-7e3c-4e5d-8760-a37cccb7f7fa\",\n        \"userId\": \"a956f99f-7390-4bf1-9564-170e3c48ba2c\",\n        \"currency\": \"USD\",\n        \"balance\": 2000,\n        \"createdAt\": \"2026-03-17T17:15:26.761Z\",\n        \"updatedAt\": \"2026-03-17T17:15:26.000Z\"\n    }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Fund Wallet (NGN)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currency\": \"NGN\",\n  \"amount\": 5000,\n  \"idempotencyKey\": \"fund-ngn-001\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/wallets/fund", "host": ["{{baseURL}}"], "path": ["wallets", "fund"] },
+            "description": "Fund a wallet with any supported currency. Uses pessimistic locking to prevent race conditions. Supply an idempotencyKey to safely retry without double-funding."
+          },
+          "response": [
+            {
+              "name": "200 - Wallet Funded",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"message\": \"Wallet funded successfully\",\n    \"newBalance\": 5000,\n    \"currency\": \"NGN\",\n    \"transactionId\": \"9796dcbc-1eb9-45aa-8f78-e330dc721838\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Fund Wallet (USD)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currency\": \"USD\",\n  \"amount\": 2000,\n  \"idempotencyKey\": \"fund-usd-001\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/wallets/fund", "host": ["{{baseURL}}"], "path": ["wallets", "fund"] },
+            "description": "Fund wallet with USD. Auto-creates a USD wallet if one does not already exist."
+          },
+          "response": [
+            {
+              "name": "200 - USD Wallet Funded",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"message\": \"Wallet funded successfully\",\n    \"newBalance\": 2000,\n    \"currency\": \"USD\",\n    \"transactionId\": \"54df4b56-9df3-4748-bceb-19b87c95ff89\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FX",
+      "description": "Real-time FX rates (Redis cached), currency conversion and trading.",
+      "item": [
+        {
+          "name": "Get FX Rates",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/fx/rates?base=NGN",
+              "host": ["{{baseURL}}"],
+              "path": ["fx", "rates"],
+              "query": [{ "key": "base", "value": "NGN", "description": "Base currency (NGN, USD, EUR, GBP)" }]
+            },
+            "description": "Get real-time FX rates for a base currency. Rates are cached in Redis for 1 hour. Falls back to hardcoded rates if the external API is unavailable."
+          },
+          "response": [
+            {
+              "name": "200 - FX Rates",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"base\": \"NGN\",\n    \"rates\": {\n        \"NGN\": 1,\n        \"USD\": 0.000727,\n        \"EUR\": 0.000632,\n        \"GBP\": 0.000546\n    },\n    \"cached\": false\n}"
+            }
+          ]
+        },
+        {
+          "name": "Convert Currency (NGN to USD)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"NGN\",\n  \"to\": \"USD\",\n  \"amount\": 1000,\n  \"idempotencyKey\": \"convert-001\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fx/convert", "host": ["{{baseURL}}"], "path": ["fx", "convert"] },
+            "description": "Convert between currencies using real-time FX rates. Operation is atomic — debit and credit happen in the same database transaction with pessimistic locking to prevent race conditions."
+          },
+          "response": [
+            {
+              "name": "200 - Conversion Successful",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"message\": \"Conversion successful\",\n    \"amountSent\": 1000,\n    \"amountReceived\": 0.73,\n    \"rate\": 0.000727,\n    \"transactionId\": \"41b7fd31-17d1-44ab-b0ef-767c9c823cc1\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Convert Currency (EUR to NGN)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"EUR\",\n  \"to\": \"NGN\",\n  \"amount\": 50,\n  \"idempotencyKey\": \"convert-002\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fx/convert", "host": ["{{baseURL}}"], "path": ["fx", "convert"] },
+            "description": "Convert 50 EUR to NGN using real-time rate."
+          },
+          "response": []
+        },
+        {
+          "name": "Trade Currency (NGN to USD)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"NGN\",\n  \"to\": \"USD\",\n  \"amount\": 1000,\n  \"idempotencyKey\": \"trade-001\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseURL}}/fx/trade", "host": ["{{baseURL}}"], "path": ["fx", "trade"] },
+            "description": "Trade Naira against other currencies. Same atomic logic as convert but recorded as a TRADE transaction type for reporting purposes."
+          },
+          "response": [
+            {
+              "name": "200 - Trade Executed",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"message\": \"Trade executed successfully\",\n    \"sold\": 1000,\n    \"bought\": 0.73,\n    \"rate\": 0.000727,\n    \"transactionId\": \"c4e57f3e-7fec-4687-a749-94439fdef97d\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "description": "Transaction history with pagination and filtering.",
+      "item": [
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/transactions?page=1&limit=10",
+              "host": ["{{baseURL}}"],
+              "path": ["transactions"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Page number (default: 1)" },
+                { "key": "limit", "value": "10", "description": "Results per page (default: 10)" },
+                { "key": "type", "value": "", "description": "Filter by type: FUND, CONVERT, TRADE", "disabled": true }
+              ]
+            },
+            "description": "Get paginated transaction history for the authenticated user. Filter by type (FUND, CONVERT, TRADE) and status (SUCCESS, FAILED, PENDING). Ordered by newest first."
+          },
+          "response": [
+            {
+              "name": "200 - Transaction History",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "cookie": [],
+              "body": "{\n    \"total\": 5,\n    \"page\": 1,\n    \"limit\": 10,\n    \"totalPages\": 1,\n    \"data\": [\n        {\n            \"id\": \"c4e57f3e-7fec-4687-a749-94439fdef97d\",\n            \"type\": \"TRADE\",\n            \"amount\": \"1000.000000\",\n            \"currency\": \"NGN\",\n            \"rate\": \"0.000727\",\n            \"status\": \"SUCCESS\",\n            \"idempotencyKey\": null,\n            \"createdAt\": \"2026-03-17T17:33:36.126Z\"\n        },\n        {\n            \"id\": \"41b7fd31-17d1-44ab-b0ef-767c9c823cc1\",\n            \"type\": \"CONVERT\",\n            \"amount\": \"1000.000000\",\n            \"currency\": \"NGN\",\n            \"rate\": \"0.000727\",\n            \"status\": \"SUCCESS\",\n            \"idempotencyKey\": null,\n            \"createdAt\": \"2026-03-17T17:19:14.960Z\"\n        },\n        {\n            \"id\": \"9796dcbc-1eb9-45aa-8f78-e330dc721838\",\n            \"type\": \"FUND\",\n            \"amount\": \"5000.000000\",\n            \"currency\": \"NGN\",\n            \"rate\": null,\n            \"status\": \"SUCCESS\",\n            \"idempotencyKey\": null,\n            \"createdAt\": \"2026-03-17T16:56:07.325Z\"\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Transactions (Filter by FUND)",
+          "request": {
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/transactions?type=FUND",
+              "host": ["{{baseURL}}"],
+              "path": ["transactions"],
+              "query": [{ "key": "type", "value": "FUND" }]
+            },
+            "description": "Filter transaction history to show only FUND transactions."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
