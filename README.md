@@ -1,4 +1,4 @@
-# FX Trading App  CredPal Backend Engineering Assessment
+# FX Trading App - CredPal Backend Engineering Assessment
 
 > Built by **Samson Odetola**
 
