@@ -1,4 +1,4 @@
-# FX Trading App — CredPal Backend Engineering Assessment
+# FX Trading App  CredPal Backend Engineering Assessment
 
 > Built by **Samson Odetola**
 
@@ -25,7 +25,7 @@ A production-ready NestJS backend for an FX Trading App. Users can register, ver
 ### Option 1: Docker (Recommended)
 
 ```bash
-git clone https://github.com/your-username/fx-trading-app.git
+git clone https://github.com/nexapytech/fx-trading-app.git
 cd fx-trading-app
 
 cp .env.example .env
